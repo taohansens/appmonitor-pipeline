@@ -1,3 +1,5 @@
+![CI Pipeline](https://img.shields.io/github/actions/workflow/status/taohansens/appmonitor-pipeline/ci.yml?branch=main)
+
 ## INFNET AT - Pipelines de CI/CD e DevOps [25E2_3]
 
 # AppMonitor Pipeline
@@ -51,3 +53,9 @@ Adicionalmente elas também servem como gatilhos para automação de deploy, poi
 - **env**: Variáveis de ambiente definidas diretamente no workflow, job ou step. São úteis para valores temporários ou específicos daquele workflow/job.
 - **vars**: Variáveis de repositório, configuradas nas configurações do GitHub. São acessíveis em todos os workflows do repositório via `${{ vars.NOME }}`. Úteis para valores compartilhados e não sensíveis.
 - **secrets**: Segredos do repositório, também configurados nas configurações do GitHub. São usados para armazenar informações sensíveis (como tokens e senhas) e acessados via `${{ secrets.NOME }}`. Não são exibidos nos logs.
+
+## Monitoramento e Depuração
+
+Conforme realizado na Etapa 4 do AT, o workflow gera logs detalhados e um summary ao final de cada execução.  
+- **Logs de debug** ajudam a identificar rapidamente falhas e entender o que ocorreu em cada etapa.
+- **Summaries** fornecem um resumo do ambiente, status dos jobs e link direto para o artefato gerado, facilitando o acompanhamento e auditoria do pipeline.

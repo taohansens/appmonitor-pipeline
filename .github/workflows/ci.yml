@@ -1,4 +1,4 @@
-name: CI Pipeline [Etapa 2]
+name: CI Pipeline [Etapa 4]
 
 on:
   push:
@@ -9,10 +9,13 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
+      - name: Ativar debug
+        run: echo "ACTIONS_STEP_DEBUG=true" >> $GITHUB_ENV
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Verificar sintaxe do script
-        run: bash -n status-check.sh
+        run: |
+          bash -n status-check.sh || { echo "::error::Erro de sintaxe no status-check.sh"; exit 1; }
 
   test:
     runs-on: ubuntu-latest
@@ -26,13 +29,45 @@ jobs:
   package:
     runs-on: ubuntu-latest
     needs: test
+    outputs:
+      artifact-id: ${{ steps.upload-artifact.outputs.artifact-id }}
     steps:
+      - name: Ativar debug
+        run: echo "ACTIONS_STEP_DEBUG=true" >> $GITHUB_ENV
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Gerar artefato report.zip
         run: zip report.zip status-check.sh README.md
+      - name: Checar existência do report.zip
+        run: |
+          if [ ! -f report.zip ]; then
+            echo "::warning::report.zip não encontrado!"
+          fi
       - name: Fazer upload do artefato
+        id: upload-artifact
         uses: actions/upload-artifact@v4
         with:
           name: report
           path: report.zip
+
+  summary:
+    runs-on: ubuntu-latest
+    needs: [validate, test, package]
+    steps:
+      - name: Ativar debug
+        run: echo "ACTIONS_STEP_DEBUG=true" >> $GITHUB_ENV
+      - name: Adicionar summary do workflow
+        run: |
+          echo "## Resumo do Workflow" >> $GITHUB_STEP_SUMMARY
+          echo "* **Runner:** $RUNNER_OS" >> $GITHUB_STEP_SUMMARY
+          echo "* **Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "* **Status do job validate:** ${{ needs.validate.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "* **Status do job test:** ${{ needs.test.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "* **Status do job package:** ${{ needs.package.result }}" >> $GITHUB_STEP_SUMMARY
+          if [ -n "${{ needs.package.outputs.artifact-id }}" ]; then
+            echo "[Baixar artefato report.zip](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ needs.package.outputs.artifact-id }})" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "::warning::Artefato não encontrado para este run." >> $GITHUB_STEP_SUMMARY
+          fi
+        env:
+          RUNNER_OS: ${{ runner.os }}
