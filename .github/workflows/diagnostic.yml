@@ -1,0 +1,60 @@
+name: Diagnóstico Automatizado de Falhas
+
+on:
+  workflow_dispatch:
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - name: Ativar debug
+        run: echo "ACTIONS_STEP_DEBUG=true" >> $GITHUB_ENV
+
+      - name: Verificar variáveis obrigatórias
+        id: check-vars
+        run: |
+          MISSING=0
+          if [ -z "${{ secrets.APP_ENV }}" ]; then
+            echo "::error::Variável APP_ENV não está definida."
+            echo "APP_ENV ausente" >> missing.txt
+            MISSING=1
+          else
+            echo "::notice::APP_ENV está definida."
+          fi
+
+          if [ -z "${{ secrets.API_KEY }}" ]; then
+            echo "::error::Variável API_KEY não está definida."
+            echo "API_KEY ausente" >> missing.txt
+            MISSING=1
+          else
+            echo "::notice::API_KEY está definida."
+          fi
+
+          if [ $MISSING -eq 1 ]; then
+            exit 1
+          fi
+
+      - name: Logs de diagnóstico
+        if: failure()
+        run: |
+          echo "Iniciando diagnóstico de falha..."
+          if [ -f missing.txt ]; then
+            cat missing.txt
+          fi
+          echo "::warning::Verifique se todas as variáveis estão configuradas."
+
+      - name: Gerar summary
+        run: |
+          echo "## Diagnóstico do Pipeline" >> $GITHUB_STEP_SUMMARY
+          if [ -f missing.txt ]; then
+            echo "### Variáveis ausentes:" >> $GITHUB_STEP_SUMMARY
+            cat missing.txt >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Sugestões de correção:" >> $GITHUB_STEP_SUMMARY
+            echo "- Acesse *Settings > Secrets and variables* no repositório." >> $GITHUB_STEP_SUMMARY
+            echo "- Adicione as variáveis obrigatórias: **APP_ENV** e **API_KEY**." >> $GITHUB_STEP_SUMMARY
+            echo "- Refaça o disparo do workflow após corrigir." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Todas as variáveis estão presentes. Pipeline pronto para execução!" >> $GITHUB_STEP_SUMMARY
+          fi
