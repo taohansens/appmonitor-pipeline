@@ -45,3 +45,9 @@ Com essas estratégias de deploy, podemos integrar novas features de forma contr
 As tags servem para aplicar versionamento semântico de forma clara e organizada, pois permitem marcar pontos específicos no histórico — como v0.1.0, como orientado no AT — facilitando a identificação de versões e a comunicação sobre as mudanças introduzidas. Ao definir essas marcações, garantimos que exista um registro imutável de releases estáveis, o que confere confiança ao distribuir pacotes ou binários, já que saberemos exatamente em qual commit aquela versão foi gerada.
 
 Adicionalmente elas também servem como gatilhos para automação de deploy, pois pipelines de CI/CD podem ser configurados para disparar apenas quando uma nova tag de release for criada, assegurando que somente versões aprovadas sejam levadas a ambientes de produção. Em situações de emergência ou bugs críticos, inclusive, podemos usar essas tags para realizar rollback rápido a um estado conhecido e funcional do código, minimizando impactos no usuário final; por fim, associar cada tag a um changelog ou release notes ajuda a documentação do projeto a ficar sempre atualizada e acessível.
+
+## Diferenças entre env, vars e secrets no GitHub Actions
+
+- **env**: Variáveis de ambiente definidas diretamente no workflow, job ou step. São úteis para valores temporários ou específicos daquele workflow/job.
+- **vars**: Variáveis de repositório, configuradas nas configurações do GitHub. São acessíveis em todos os workflows do repositório via `${{ vars.NOME }}`. Úteis para valores compartilhados e não sensíveis.
+- **secrets**: Segredos do repositório, também configurados nas configurações do GitHub. São usados para armazenar informações sensíveis (como tokens e senhas) e acessados via `${{ secrets.NOME }}`. Não são exibidos nos logs.
