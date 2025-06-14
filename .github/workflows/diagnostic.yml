@@ -15,7 +15,7 @@ jobs:
         id: check-vars
         run: |
           MISSING=0
-          if [ -z "${{ secrets.APP_ENV }}" ]; then
+          if [ -z "${{ vars.APP_ENV }}" ]; then
             echo "::error::Variável APP_ENV não está definida."
             echo "APP_ENV ausente" >> missing.txt
             MISSING=1
