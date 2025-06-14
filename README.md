@@ -27,6 +27,57 @@ chmod +x status-check.sh
 ./status-check.sh
 ```
 
+## Etapas do Pipeline
+
+### 1. ci/Validação
+- Verifica a sintaxe do script `status-check.sh`.
+- Gera erro e logs claros caso haja problemas de sintaxe.
+
+### 2. ci/Testes
+- Simula a execução de testes automatizados.
+- Exibe logs de execução.
+
+### 3. ci/Empacotamento
+- Gera o artefato `report.zip` contendo arquivos importantes.
+- Faz upload do artefato para consulta posterior.
+
+### 4. ci/Resumo Automatizado
+- Gera um summary ao final do pipeline, incluindo:
+  - Ambiente de execução (SO, branch)
+  - Status de cada etapa
+  - Link direto para download do artefato gerado
+
+### 5. Deploy com Aprovação Manual
+- o workflow `deploy.yml` aciona o deploy para o ambiente de produção somente após aprovação manual.
+- Utiliza variável de ambiente segura (`PROD_DOMAIN`) configurada no ambiente `production` do GitHub.
+
+### 6. Diagnóstico Automatizado de Falhas
+- O workflow `diagnostic.yml` verifica se variáveis obrigatórias (`APP_ENV`, `API_KEY`) estão definidas.
+- Gera logs, mensagens de erro e um summary com sugestões de correção caso falte alguma variável.
+
+---
+
+## Configurações Necessárias
+
+### Ambientes e Variáveis
+
+- **Ambiente `production`:**
+  - Crie em: `Settings > Environments > New environment`
+  - Nome: `production`
+  - Variável: `PROD_DOMAIN=appmonitor.com`
+  - Adicionar revisores para que haja aprovação manual.
+
+  - **Ambiente `dev`:**
+  - Crie em: `Settings > Environments > New environment`
+  - Nome: `dev`
+  - Variável: `APP_ENV=dev`
+  - Secret: `API_KEY=random`
+
+- **Obrigatórios para diagnóstico: (ambiente: dev)**
+  - `APP_ENV` (Variable)
+  - `API_KEY` (Secret)
+---
+
 ## Git e Entrega Contínua
 
 O Git é fundamental na entrega contínua porque organiza todo o desenvolvimento de forma clara e confiável: cada alteração no código fica registrada com informações sobre autor, data e propósito, o que traz segurança para a equipe saber quem fez o quê e evita dúvidas na hora de conferir o histórico do projeto.
